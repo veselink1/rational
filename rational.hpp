@@ -74,23 +74,14 @@ namespace rational {
         {  }
 
         template<class U>
-        CONSTEXPR Ratio(const U u) noexcept :
+        CONSTEXPR Ratio(const U& u) noexcept :
             Ratio(T(u), T(1), NoReduceTag())
         {
             static_assert(std::is_convertible<U, T>::value,
                 "Ratio<T>::Ratio<U>(const U): U must meet the requirements of Convertible to T.");
         }
 
-        Ratio(const float u, const unsigned prec) :
-            Ratio(static_cast<std::ptrdiff_t>(u * cpow(10, prec)), cpow(10, prec))
-        {
-            if((u > 0 && u > this->numer_)
-                || (u < 0 && u < this->numer_)) {
-                throw OverflowException();
-            }
-        }
-
-        Ratio(const T numer, const T denom) noexcept :
+        Ratio(const T& numer, const T& denom) noexcept :
             numer_(numer),
             denom_(denom)
         {
@@ -102,7 +93,7 @@ namespace rational {
             *this = ret;
         }
 
-        CONSTEXPR Ratio(const T numer, const T denom, NoReduceTag) noexcept :
+        CONSTEXPR Ratio(const T& numer, const T& denom, NoReduceTag) noexcept :
             numer_(numer),
             denom_(denom)
         {  }
@@ -150,6 +141,17 @@ namespace rational {
             static_assert(std::is_constructible<Float, T>::value,
                 "Ratio<T>::to_floating<Float>(): T must meet the requirements of Convertible to Float.");
             return Float(Float(this->numer_) / Float(this->denom_));
+        }
+
+        template<class Float = float>
+        Ratio from_float(const Float u&, const unsigned prec)
+        {
+            Ratio rat (T(u * cpow(10, prec)), T(cpow(10, prec)));
+            if((u > 0 && u > rat.numer_)
+                || (u < 0 && u < rat.numer_)) {
+                throw OverflowException();
+            }
+            return rat;
         }
 
         const T& numer() const noexcept
@@ -482,12 +484,12 @@ namespace rational {
 
     namespace literals {
 
-        CONSTEXPR Rational operator"" _m(const unsigned long long int n) noexcept
+        CONSTEXPR Rational operator"" _r(const unsigned long long int n) noexcept
         {
             return Rational(n, 1, NoReduceTag());
         }
         
-        CONSTEXPR Rational operator"" _M(const unsigned long long int n) noexcept
+        CONSTEXPR Rational operator"" _R(const unsigned long long int n) noexcept
         {
             return Rational(n, 1, NoReduceTag());
         }
