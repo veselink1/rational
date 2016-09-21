@@ -505,10 +505,10 @@ namespace rational {
     template<class T>
     std::istream& operator>>(std::istream& is, Ratio<T>& x)
     {
-        T numer;
-        T denom;
+        long numer;
+        long denom;
         std::scanf("%ld/%ld", &numer, &denom);
-        x = Ratio<T>(numer, denom);
+        x = Ratio<T>(T(numer), T(denom));
         return is;
     }
 
