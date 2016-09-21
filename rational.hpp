@@ -480,15 +480,19 @@ namespace rational {
     typedef Ratio<std::int32_t> Rational32;
     typedef Ratio<std::int64_t> Rational64;
 
-    CONSTEXPR Rational operator"" _m(const unsigned long long int n) noexcept
-    {
-        return Rational(n, 1, NoReduceTag());
-    }
-    
-    CONSTEXPR Rational operator"" _M(const unsigned long long int n) noexcept
-    {
-        return Rational(n, 1, NoReduceTag());
-    }
+    namespace literals {
+
+        CONSTEXPR Rational operator"" _m(const unsigned long long int n) noexcept
+        {
+            return Rational(n, 1, NoReduceTag());
+        }
+        
+        CONSTEXPR Rational operator"" _M(const unsigned long long int n) noexcept
+        {
+            return Rational(n, 1, NoReduceTag());
+        }
+
+    } // namespace literals
 
     template<class T>
     std::ostream& operator<<(std::ostream& os, Ratio<T> x)
