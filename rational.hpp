@@ -1,7 +1,6 @@
 #ifndef _RATIONAL_H
 #define _RATIONAL_H
 
-#include <cmath>
 #include <cstddef>
 #include <stdexcept>
 #include <type_traits>
@@ -9,7 +8,7 @@
 #ifndef RATIONAL_NCONSTEXPR
 #define CONSTEXPR constexpr
 #else
-#define CONSTEXPR /* not supported */
+#define CONSTEXPR /* constexpr */
 #endif
 
 namespace rational {
@@ -33,7 +32,7 @@ namespace rational {
         template<class T>
         inline CONSTEXPR T cpow(const T base, unsigned const exponent) noexcept
         {
-            return (exponent == 0) ? 1 : (base * pow(base, exponent-1));
+            return (exponent == 0) ? 1 : (base * cpow(base, exponent-1));
         }
 
         template<class T>
@@ -103,7 +102,7 @@ namespace rational {
             return T(r.numer / r.denom);
         }
 
-        template<class Float = float>
+        template<class Float = double>
         inline static CONSTEXPR Float to_float(const Ratio& r) noexcept
         {
             return Float(Float(r.numer) / Float(r.denom));
@@ -139,6 +138,12 @@ namespace rational {
         inline explicit CONSTEXPR operator Ratio<U>() const noexcept
         {
             return Ratio<U>(U(this->numer), U(this->denom), NoReduceTag());
+        }
+
+        template<class Float>
+        inline explicit CONSTEXPR operator Float() const noexcept
+        {
+            return to_float<Float>(*this);
         }
 
         inline friend Ratio<T> operator+(const Ratio<T>& lhs, const Ratio<T>& rhs) noexcept
@@ -373,14 +378,20 @@ namespace rational {
     }
 
     template<class T>
-    inline Ratio<T> pow(const Ratio<T>& r, int expon) noexcept
+    inline Ratio<T> recip(const Ratio<T>& r) noexcept
+    {
+        return Ratio<T>(r.denom, r.numer, NoReduceTag());
+    }
+
+    template<class T, class F>
+    inline Ratio<T> pow(const Ratio<T>& r, int expon, F&& tpow) noexcept
     {
         if(expon == 0) {
             return Ratio<T>(1);
         } else if(expon < 0) {
-            return std::pow(recip(r), -expon);
+            return pow(recip(r), -expon);
         } else {
-            return Ratio<T>(std::pow(r.numer, expon), std::pow(r.numer, expon));
+            return Ratio<T>(tpow(r.numer, expon), tpow(r.numer, expon));
         }
     }
 
@@ -408,7 +419,13 @@ namespace rational {
         }
     }
 
-    typedef Ratio<std::ptrdiff_t> Rational;
+    template<class T, class F>
+    inline Ratio<T> sqrt(const Ratio<T>& r, F&& sqrt) noexcept
+    {
+        return Ratio<T>(sqrt(r.numer), sqrt(r.denom));
+    }
+
+    typedef Ratio<int> Rational;
     typedef Ratio<std::int32_t> Rational32;
     typedef Ratio<std::int64_t> Rational64;
 
