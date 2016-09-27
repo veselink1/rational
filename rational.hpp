@@ -98,25 +98,6 @@ namespace rational {
             return *this;
         }
 
-        template<class U>
-        inline CONSTEXPR Ratio(const Ratio<U>& r) noexcept :
-            numer(r.numer),
-            denom(r.denom)
-        {
-            static_assert(std::is_convertible<U, T>::value,
-                "Ratio<T>::Ratio<U>(const Ratio<U>&): U must meet the requirements of ImplicitlyConvertible to T.");
-        }
-
-
-        template<class U>
-        inline Ratio& operator=(const Ratio<U>& r) noexcept
-        {
-            static_assert(std::is_convertible<U, T>::value,
-                "Ratio<T>::operator=<U>(const Ratio<U>&): U must meet the requirements of ImplicitlyConvertible to T.");
-            new (this) Ratio<T>(r.numer, r.denom, NoReduceTag());
-            return *this;
-        }
-
         inline static CONSTEXPR T to_integer(const Ratio& r) noexcept
         {
             return T(r.numer / r.denom);
@@ -125,8 +106,6 @@ namespace rational {
         template<class Float = float>
         inline static CONSTEXPR Float to_float(const Ratio& r) noexcept
         {
-            static_assert(std::is_constructible<Float, T>::value,
-                "Ratio<T>::to_floating<Float>(): T must meet the requirements of Convertible to Float.");
             return Float(Float(r.numer) / Float(r.denom));
         }
 
@@ -159,8 +138,6 @@ namespace rational {
         template<class U>
         inline explicit CONSTEXPR operator Ratio<U>() const noexcept
         {
-            static_assert(std::is_convertible<U, T>::value,
-                "Ratio<T>::operator Ratio<U>(): T must meet the requirements of ImplicitlyConvertible to U.");
             return Ratio<U>(U(this->numer), U(this->denom), NoReduceTag());
         }
 
@@ -242,6 +219,12 @@ namespace rational {
         inline friend bool operator>=(const Ratio<T>& lhs, const Ratio<T>& rhs) noexcept
         {
             return !(lhs < rhs);
+        }
+
+        template<class U>
+        constexpr explicit operator Ratio<U>() const noexcept 
+        {
+            return Ratio<U>(U(this->numer), U(this->denom));
         }
             
     };
@@ -360,7 +343,7 @@ namespace rational {
         const T one(1);
         const T two(one + one);
 
-        Ratio<T> fractional = r.fract();
+        Ratio<T> fractional = fract(r);
         if(fractional < zero) {
             fractional = zero - fractional;
         }
@@ -374,12 +357,12 @@ namespace rational {
 
         if(half_or_larger) {
             if(is_positive(r)) {
-                return r.trunc() + Ratio<T>::one();
+                return trunc(r) + Ratio<T>::one();
             } else {
-                return r.trunc() - Ratio<T>::one();
+                return trunc(r) - Ratio<T>::one();
             }
         } else {
-            return r.trunc();
+            return trunc(r);
         }
     }
 
@@ -410,7 +393,7 @@ namespace rational {
     template<class T>
     inline Ratio<T> abs(const Ratio<T>& r) noexcept
     {
-        return (r.is_positive() || r.is_zero() ? r : -r);
+        return (is_negative(r) ? -r : r);
     }
     
     template<class T>
