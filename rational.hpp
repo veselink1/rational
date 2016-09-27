@@ -220,12 +220,6 @@ namespace rational {
         {
             return !(lhs < rhs);
         }
-
-        template<class U>
-        constexpr explicit operator Ratio<U>() const noexcept 
-        {
-            return Ratio<U>(U(this->numer), U(this->denom));
-        }
             
     };
 
